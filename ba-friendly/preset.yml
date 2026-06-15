@@ -1,0 +1,9 @@
+id: ba-friendly
+name: BA-Friendly Spec Kit
+description: >
+  Makes /speckit.specify, /speckit.clarify, and /speckit.tasks conversational.
+  The AI asks one question at a time, iterating with the BA until each artifact
+  is complete. All phases grounded in OKF. Uses wrap strategy so core spec-kit
+  updates flow through automatically.
+version: 1.0.0
+strategy: wrap
