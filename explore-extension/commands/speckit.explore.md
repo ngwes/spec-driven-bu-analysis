@@ -4,10 +4,7 @@ Answer questions about the platform using ONLY the Open Knowledge Format.
 
 ## Rules
 
-1. Start at `okf/index.md`, then read the relevant index files:
-   - `okf/glossary/index.md` for business terms
-   - `okf/services/index.md` for services
-   - `okf/events/index.md` for events
+1. Start at `okf/index.md`, then read the relevant category index files.
 2. Follow links to specific concept files as needed.
 3. Answer the user's question based SOLELY on what the OKF contains.
 
@@ -20,6 +17,8 @@ Example:
 > Yes. The Notification service handles email delivery. It subscribes to
 > `OrderShipped`, `PaymentFailed`, and `SubscriptionCancelled` events.
 > Source: okf/services/notification-service.md, okf/events/order-shipped.md
+>
+> (Actual paths depend on your OKF category structure.)
 
 ### If the answer is NOT in the OKF
 Say so clearly. Do not speculate beyond what the OKF contains.

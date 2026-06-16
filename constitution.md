@@ -5,15 +5,12 @@ Governing principles for all spec-kit commands in this project.
 ## OKF Grounding — MANDATORY, ALL PHASES
 
 Before ANY response in `specify`, `clarify`, `explore`, `plan`, `tasks`, or
-`implement`, the AI MUST consult the Open Knowledge Format bundle at `okf/`.
+`implement`, or any other command, the AI MUST consult the Open Knowledge Format bundle at `okf/`.
 
 ### Navigation Protocol
 
 1. Start at `okf/index.md` — understand the bundle structure.
-2. Read the relevant index for the phase:
-   - Glossary: `okf/glossary/index.md` → individual term files
-   - Services: `okf/services/index.md` → individual service files
-   - Events: `okf/events/index.md` → individual event files
+2. Read the category index files relevant to the current phase.
 3. Follow markdown links to the specific concept files needed.
 4. Do NOT read the entire bundle — use progressive disclosure.
 

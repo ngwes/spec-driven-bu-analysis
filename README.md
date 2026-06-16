@@ -1,4 +1,4 @@
-# Spec-Drive Setup
+# Spec-Driven Setup
 
 This repo contains the tooling to run spec-driven development with spec-kit
 on an existing `.NET / Angular` microservice platform, designed for **business
@@ -7,7 +7,7 @@ analyst** autonomy with **OKF-grounded** AI.
 ## What's Inside
 
 ```
-spec-drive/
+spec-driven/
 ├── ba-friendly/                    # Preset: conversational specify, clarify, tasks
 │   ├── preset.yml
 │   ├── commands/
@@ -26,23 +26,12 @@ spec-drive/
 │       ├── speckit.create-review.md
 │       └── speckit.review.md
 ├── okf/                            # Open Knowledge Format (Google OKF standard)
+│   ├── README.md                   # How to structure, populate, maintain
 │   ├── index.md                    # Bundle entry point
 │   ├── log.md                      # Change log — devs write here
-│   ├── glossary/                   # One file per business term
-│   │   ├── index.md
-│   │   ├── order.md
-│   │   ├── customer.md
-│   │   └── subscription.md
-│   ├── services/                   # One file per service
-│   │   ├── index.md
-│   │   ├── orders-service.md
-│   │   ├── notification-service.md
-│   │   └── [more services].md
-│   └── events/                     # One file per event
-│       ├── index.md
-│       ├── order-shipped.md
-│       ├── payment-confirmed.md
-│       └── [more events].md
+│   └── catalog/                    # PLACEHOLDER — rename for your domain
+│       ├── index.md                # Category listing
+│       └── _TEMPLATE.md            # Copy to create a concept
 └── constitution.md                 # OKF grounding rules (→ .specify/memory/)
 ```
 
@@ -51,20 +40,25 @@ spec-drive/
 ### 1. Initialize spec-kit
 
 ```bash
-specify init spec-drive --ai claude
-cd spec-drive
+# With Claude Code
+specify init spec-driven --ai claude
+
+# Or with GitHub Copilot
+specify init spec-driven --ai copilot
+
+cd spec-driven
 ```
 
 ### 2. Copy the OKF
 
-Move `okf/` into the spec-drive repo:
+Move `okf/` into the spec-driven repo:
 
 ```bash
 cp -r okf/ ./
 ```
 
 Populate the OKF with your actual services, events, and glossary.
-Use the examples as a template.
+Copy `_TEMPLATE.md` in each directory to get started. See `okf/README.md` for the full guide.
 
 ### 3. Add the constitution
 
@@ -233,8 +227,8 @@ completing a feature.
 
 ### After AGENTS.md is updated: Sync to OKF
 
-The OKF in the spec-drive repo is the aggregated, cross-repo knowledge graph.
-Once AGENTS.md is current, the dev triggers the OKF sync in the spec-drive repo:
+The OKF in the spec-driven repo is the aggregated, cross-repo knowledge graph.
+Once AGENTS.md is current, the dev triggers the OKF sync in the spec-driven repo:
 
 ```
 /speckit.okf-sync
@@ -299,8 +293,8 @@ specify --version
 
 ```bash
 cd /tmp
-specify init spec-drive-test --ai claude
-cd spec-drive-test
+specify init spec-driven-test --ai claude   # or --ai copilot
+cd spec-driven-test
 ```
 
 ### 2. Install everything

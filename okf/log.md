@@ -18,5 +18,4 @@ YYYY-MM-DD: [scope] Description of what changed
 
 ## Entries
 
-<!-- Example entries — real ones go below -->
-2026-06-15: [okf] Initial OKF bootstrap from existing platform knowledge
+<!-- Append entries below. The AI sync reads from the last synced entry onward. -->
