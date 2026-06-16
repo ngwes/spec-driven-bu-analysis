@@ -8,6 +8,7 @@ This is a DIALOG, not a one-shot. Ask ONE question at a time.
    - What should happen, step by step? (user journey)
    - Are there business rules or constraints?
    - How will you know it's done? (acceptance criteria)
-3. When the user indicates readiness, produce the final spec.md.
+3. If necessary, go back and forth with the user.
+4. When the user indicates readiness, produce the final spec.md.
 
 {CORE_TEMPLATE}
