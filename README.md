@@ -122,7 +122,9 @@ in `brainstorms/YYYY-MM-DD-<topic>.md` — always the same directory.
 /speckit.specify I want customers to get an email when their order ships.
 ```
 
-The AI asks one question at a time. Iterates. Produces spec.md.
+The AI asks one question at a time. Before writing `spec.md`, it produces a
+**draft** for review. The BA adds inline comments with `<!-- -->`. Loop until
+approved, then the AI writes the final artifact.
 
 ### BA: Refining a spec (any time)
 
@@ -131,6 +133,7 @@ The AI asks one question at a time. Iterates. Produces spec.md.
 ```
 
 The AI reads the current spec, finds ambiguities, dialogs through them.
+Produces a draft first, applies clarifications on approval.
 
 ### BA: Breaking into tasks
 
@@ -138,8 +141,29 @@ The AI reads the current spec, finds ambiguities, dialogs through them.
 /speckit.tasks
 ```
 
-The AI breaks the spec into tasks story by story, dialoguing with the BA
-to confirm the breakdown. Produces tasks.md.
+The AI breaks the spec into tasks story by story, dialoguing with the BA.
+Produces a draft first, writes `tasks.md` on approval.
+
+### The Plan-First Pattern
+
+All artifact-producing commands follow the same cycle:
+
+```
+AI dialogs → drafts → user reviews → approved → artifact
+                   ↑                                 │
+                   └── user comments with <!-- --> ──┘
+```
+
+1. **Draft.** AI writes a temporary file (`draft-spec.md`, `draft-tasks.md`, etc.)
+2. **Review.** User reads it, adds inline comments using HTML comments:
+   ```markdown
+   <!-- Should this be P2 instead? -->
+   <!-- What about the edge case where the user has no email? -->
+   ```
+3. **Iterate.** User says "reviewed." AI reads every comment, updates the draft.
+4. **Approve.** User says "approved." AI writes the final artifact, deletes the draft.
+
+No artifact is written without a reviewed plan. Every draft is disposable.
 
 ### Handoff: spec.md + tasks.md
 
@@ -158,7 +182,7 @@ to the previous.
 /speckit.create-review
 ```
 
-The AI asks which spec, then collects issues one at a time. Produces `review.md`.
+The AI asks which spec, then collects issues one at a time. Draft first, writes `review.md` on approval.
 
 **Resolving a review (BA):**
 
@@ -167,8 +191,8 @@ The AI asks which spec, then collects issues one at a time. Produces `review.md`
 ```
 
 The AI asks which spec + which review(s) to apply. Walks through issues one
-at a time. Produces a new spec (e.g., `spec-v2.md`) that links back to the
-original via frontmatter. The review is marked as resolved.
+at a time. Draft first, writes `spec-vN.md` on approval, linking back to the
+original. The review is marked as resolved.
 
 **The chain:**
 
@@ -366,10 +390,28 @@ cp -r /path/to/spec-kit/review-extension/    .specify/extensions/review/
 |------|----------|
 | `/speckit.explore` | Answers cite OKF files. Says "not in OKF" for unknowns. |
 | `/speckit.brainstorm` | Dialog, one question at a time. Offers to save to `brainstorms/`. |
-| `/speckit.specify` | One question at a time. Flags OKF gaps in the spec. |
-| `/speckit.clarify` | Reads spec, finds ambiguities, dialogs one at a time. |
-| `/speckit.tasks` | Breaks spec story by story. Dialogues. |
-| `/speckit.create-review` | Asks which spec, collects issues one at a time. Writes `review.md`. |
-| `/speckit.review` | Applies review(s), resolves one issue at a time. Writes `spec-v2.md` with back-link. |
+| `/speckit.specify` | One question at a time. Flags OKF gaps. Draft → review → approve → spec.md. |
+| `/speckit.clarify` | Reads spec, finds ambiguities, dialogs. Draft → approve → updated spec.md. |
+| `/speckit.tasks` | Breaks spec story by story. Draft → approve → tasks.md. |
+| `/speckit.create-review` | Collects issues one at a time. Draft → approve → review.md. |
+| `/speckit.review` | Resolves issues one at a time. Draft → approve → spec-vN.md with back-link. |
+| Plan-first cycle | All artifact commands produce a draft. User comments with `<!-- -->`. Loop until approved. |
 | Constitution | All commands read from `okf/` before responding. |
 | OKF sync | `okf/log.md` entries updated after sync. Only changed files touched. |
+
+## Future Enhancements
+
+### Visual Plan Review with Plannotator
+
+Currently, the plan-first cycle uses `<!-- HTML comments -->` for draft annotations.
+A future enhancement is integrating [Plannotator](https://github.com/backnotprop/plannotator)
+for a richer review experience:
+
+- **Browser-based review UI** — BAs review drafts in a clean visual interface, no markdown editing
+- **VS Code extension available** — open plans in editor tabs with gutter annotations
+- **Inline annotations with approve/deny** — click a section, leave feedback, approve or send back for revision
+- **Multiplayer** — BA and dev can annotate the same plan together
+- **Agent integration** — hooks into spec-kit's lifecycle, feedback goes directly back to the AI agent
+
+Status: **Nice to have.** The `<!-- -->` approach works today; Plannotator would
+upgrade the review UX once the workflow is validated.
