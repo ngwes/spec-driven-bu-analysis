@@ -228,7 +228,9 @@ completing a feature.
 
 **Cost:** 2-3 sentences of writing. Highest friction, but full control.
 
-### After AGENTS.md is updated: Sync to OKF
+### Next Step
+
+# After AGENTS.md is updated: Sync to OKF
 
 The OKF in the spec-driven repo is the aggregated, cross-repo knowledge graph.
 Once AGENTS.md is current, the dev triggers the OKF sync in the spec-driven repo:
@@ -374,9 +376,8 @@ cp -r /path/to/spec-kit/review-extension/    .specify/extensions/review/
 | `/speckit.tasks` | Breaks spec story by story. Draft → approve → tasks.md. |
 | `/speckit.create-review` | Collects issues one at a time. Draft → approve → review.md. |
 | `/speckit.review` | Resolves issues one at a time. Draft → approve → spec-vN.md with back-link. |
-| Plan-first cycle | All artifact commands produce a draft. User comments with `<!-- -->`. Loop until approved. |
 | Constitution | All commands read from `okf/` before responding. |
-| OKF sync | `okf/log.md` entries updated after sync. Only changed files touched. |
+| OKF sync (WIP)| `okf/log.md` entries updated after sync. Only changed files touched. |
 
 ## Future Enhancements
 
