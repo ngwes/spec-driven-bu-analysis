@@ -144,27 +144,6 @@ Produces a draft first, applies clarifications on approval.
 The AI breaks the spec into tasks story by story, dialoguing with the BA.
 Produces a draft first, writes `tasks.md` on approval.
 
-### The Plan-First Pattern
-
-All artifact-producing commands follow the same cycle:
-
-```
-AI dialogs → drafts → user reviews → approved → artifact
-                   ↑                                 │
-                   └── user comments with <!-- --> ──┘
-```
-
-1. **Draft.** AI writes a temporary file (`draft-spec.md`, `draft-tasks.md`, etc.)
-2. **Review.** User reads it, adds inline comments using HTML comments:
-   ```markdown
-   <!-- Should this be P2 instead? -->
-   <!-- What about the edge case where the user has no email? -->
-   ```
-3. **Iterate.** User says "reviewed." AI reads every comment, updates the draft.
-4. **Approve.** User says "approved." AI writes the final artifact, deletes the draft.
-
-No artifact is written without a reviewed plan. Every draft is disposable.
-
 ### Handoff: spec.md + tasks.md
 
 The BA delivers two files. The dev reviews them, optionally runs
@@ -415,3 +394,24 @@ for a richer review experience:
 
 Status: **Nice to have.** The `<!-- -->` approach works today; Plannotator would
 upgrade the review UX once the workflow is validated.
+
+### The Plan-First Pattern
+
+All artifact-producing commands follow the same cycle:
+
+```
+AI dialogs → drafts → user reviews → approved → artifact
+                   ↑                                 │
+                   └── user comments with <!-- --> ──┘
+```
+
+1. **Draft.** AI writes a temporary file (`draft-spec.md`, `draft-tasks.md`, etc.)
+2. **Review.** User reads it, adds inline comments using HTML comments:
+   ```markdown
+   <!-- Should this be P2 instead? -->
+   <!-- What about the edge case where the user has no email? -->
+   ```
+3. **Iterate.** User says "reviewed." AI reads every comment, updates the draft.
+4. **Approve.** User says "approved." AI writes the final artifact, deletes the draft.
+
+No artifact is written without a reviewed plan. Every draft is disposable.
