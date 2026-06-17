@@ -230,7 +230,7 @@ completing a feature.
 
 ### Next Step
 
-# After AGENTS.md is updated: Sync to OKF
+##### After AGENTS.md is updated: Sync to OKF
 
 The OKF in the spec-driven repo is the aggregated, cross-repo knowledge graph.
 Once AGENTS.md is current, the dev triggers the OKF sync in the spec-driven repo:
