@@ -142,7 +142,33 @@ to abandon wikis. OKF is designed for agent-maintained knowledge.
 
 ### Maintenance Patterns
 
-#### Pattern 1: Log-Driven Sync (recommended)
+#### Pattern 0: CI Pipeline (ideal, if permitted)
+
+The gold standard for AGENTS.md/OKF maintenance. Triggered on push to main:
+
+```
+Push to main → CI job starts
+    → Agent reads git diff against previous main
+    → Agent updates AGENTS.md if platform surface changed
+    → Agent pushes updated AGENTS.md back to the repo
+    → Optional: Agent syncs to central OKF aggregator
+```
+
+**Why it's ideal:**
+- Zero developer burden — no manual steps, no hooks, no skills to remember
+- Reliable — monitored, logged, failures are visible and don't block devs
+- Atomic per push — every merged PR gets its AGENTS.md update, no drift
+- Auditable — CI logs show every update, when and why
+
+**Why hooks/skills exist as alternatives:**
+- Company policy may prohibit AI agents in CI pipelines
+- CI environments may lack necessary agent tooling or API access
+- Some teams want human review before AGENTS.md changes are committed
+
+If CI is available and permitted, prefer it. It eliminates the developer
+burden entirely.
+
+#### Pattern 1: Log-Driven Sync (recommended for OKF)
 
 ```
 Dev appends to log.md → runs sync command → AI updates concept files
@@ -223,13 +249,67 @@ AGENTS.md changes → dev runs sync → OKF concept files updated → log.md app
 
 ---
 
+---
+
+## Future: The Karpathy LLM Wiki Maintenance Pattern
+
+Andrej Karpathy's LLM Wiki pattern (April 2026, 5,000+ GitHub stars) is the
+canonical source for daily LLM knowledge maintenance. Google's OKF formalizes it.
+Key implementations: [llm-wiki-plugin](https://github.com/praneybehl/llm-wiki-plugin),
+[claude-memory-compiler](https://github.com/coleam00/claude-memory-compiler),
+[agent-brain](https://github.com/Railly/agent-brain).
+
+### Three-Layer Architecture
+
+```
+raw/          ← Immutable sources (human-curated, LLM reads only)
+wiki/         ← LLM-maintained structured markdown (concepts, entities, links)
+SCHEMA.md     ← Rules telling the LLM HOW to ingest, maintain, lint
+```
+
+### Daily Rhythm
+
+```
+PER FEATURE:  Dev appends log.md → LLM syncs 3-5 concept files
+WEEKLY:       LLM lints: broken links, orphans, contradictions, stale pages
+MONTHLY:      Human reviews contested items, fills important stubs
+```
+
+### 12-Point Lint Checklist (Karpathy)
+
+| Priority | Check |
+|----------|-------|
+| 🔴 High | Broken wikilinks (point to nonexistent pages) |
+| 🔴 High | Orphan pages (zero inbound links) |
+| 🟡 Medium | Source drift (raw/ file sha256 changed) |
+| 🟡 Medium | Contradictions (`contested: true` pages need review) |
+| 🟡 Medium | Stale content (updated > 90 days ago) |
+| 🟢 Low | Low confidence (`confidence: low` or single source) |
+| 🟢 Low | Oversized pages (> 200 lines, needs splitting) |
+| 🟢 Low | Tag audit (all tags in taxonomy) |
+| 🟢 Low | Index completeness (all pages in index.md) |
+| 🟢 Low | Frontmatter completeness (required fields) |
+| 🟢 Low | Log rotation (log.md > 500 entries) |
+| 🟢 Low | Missing backlinks (outbound links without inbound) |
+
+### Contradiction Handling
+
+When new info conflicts with existing: keep BOTH, mark `contested: true`,
+record dates and sources. Never silently overwrite.
+
+Status: **Future enhancement.** The log-driven sync pattern covers daily needs.
+Add automated linting once the OKF grows beyond ~50 concept files.
+
 ## Sources and Further Reading
 
+- [Andrej Karpathy's LLM Wiki (canonical source)](https://gist.github.com/karpathy) — the foundational pattern
 - [AGENTS.md Spec (2026): Recommended Sections](https://www.morphllm.com/agents-md-guide)
 - [CLAUDE.md Best Practices, 2026](https://dev.to/0xmariowu/claudemd-best-practices-2026-1i5a)
 - [One AGENTS.md for every coding agent](https://dev.to/mudassirworks/one-agentsmd-for-every-coding-agent-stop-maintaining-claudemd-and-geminimd-separately-34g4)
 - [Google OKF Announcement](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing)
-- [Google's OKF is just Markdown in folders (and that's the point)](https://dev.to/hjarni/googles-open-knowledge-format-is-just-markdown-in-folders-and-thats-the-point-4gnc)
-- [OKF: The missing layer between AI agents and real work context](https://www.remio.ai/post/google-s-okf-is-the-missing-layer-between-ai-agents-and-real-work-context)
+- [Google's OKF is just Markdown in folders](https://dev.to/hjarni/googles-open-knowledge-format-is-just-markdown-in-folders-and-thats-the-point-4gnc)
+- [OKF: The missing layer between AI agents and real work](https://www.remio.ai/post/google-s-okf-is-the-missing-layer-between-ai-agents-and-real-work-context)
 - [Google OKF reference implementation](https://github.com/GoogleCloudPlatform/knowledge-catalog)
-- [wiki-viva-kit: Living operational wiki with agent linting](https://github.com/kimlage/wiki-viva-kit)
+- [llm-wiki-plugin: Karpathy pattern as Claude Code plugin](https://github.com/praneybehl/llm-wiki-plugin)
+- [claude-memory-compiler: daily auto-maintenance with hooks](https://github.com/coleam00/claude-memory-compiler)
+- [agent-brain: Obsidian + Claude Code daily rhythm](https://github.com/Railly/agent-brain)

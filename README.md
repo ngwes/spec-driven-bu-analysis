@@ -25,6 +25,11 @@ spec-driven/
 │   └── commands/
 │       ├── speckit.create-review.md
 │       └── speckit.review.md
+├── hooks/
+│   └── pre-commit.ps1               # PowerShell hook: auto-update AGENTS.md on version tags
+├── skills/
+│   └── update-agents/
+│       └── SKILL.md                 # Manual skill: update AGENTS.md via subagent
 ├── okf/                            # Open Knowledge Format (Google OKF standard)
 │   ├── README.md                   # How to structure, populate, maintain
 │   ├── index.md                    # Bundle entry point
@@ -182,70 +187,11 @@ spec.md  →  review.md  →  spec-v2.md  →  review-2.md  →  spec-v3.md
 
 Full traceability. Nothing is ever lost.
 
-### After implementation: Maintain AGENTS.md
+### After implementation
 
-Each service repo has an `AGENTS.md` that the AI reads to understand that
-service. It must stay current. Multiple approaches, pick what fits:
-
-#### Approach A: Git-log-driven (recommended)
-
-AGENTS.md self-tracks the commit it was last updated from:
-
-```markdown
----
-last-updated-commit: abc123def
----
-```
-
-A skill in the service repo (`/update-agents`) reads the git log from that
-commit to HEAD on main, summarizes the changes, and updates AGENTS.md:
-
-```
-Dev runs: /update-agents
-
-Skill does:
-  1. Reads last-updated-commit from AGENTS.md frontmatter
-  2. Runs: git log <last-updated-commit>..origin/main --oneline
-  3. Summarizes the commits into AGENTS.md sections
-  4. Updates last-updated-commit to HEAD
-  5. Dev reviews, commits the updated AGENTS.md
-```
-
-**Cost:** one slash command. No manual writing.
-
-#### Approach B: Spec-implement-driven
-
-After `/speckit.implement` finishes in the service repo, the AI that
-implemented the feature already knows exactly what changed. It can
-update AGENTS.md directly as the final implementation step.
-
-**Cost:** zero extra steps. AGENTS.md is a byproduct of implementation.
-
-#### Approach C: Manual
-
-Dev writes a brief summary of changes directly in AGENTS.md after
-completing a feature.
-
-**Cost:** 2-3 sentences of writing. Highest friction, but full control.
-
-### Next Step
-
-##### After AGENTS.md is updated: Sync to OKF
-
-The OKF in the spec-driven repo is the aggregated, cross-repo knowledge graph.
-Once AGENTS.md is current, the dev triggers the OKF sync in the spec-driven repo:
-
-```
-/speckit.okf-sync
-```
-
-The AI:
-1. Reads the updated AGENTS.md from the service repo
-2. Identifies which OKF concept files are affected
-3. Updates only those files (1-3 files, not the whole bundle)
-4. Appends an entry to `okf/log.md` recording the change
-
-**Total cost per feature:** 1-2 slash commands. No manual OKF editing.
+Each service repo's `AGENTS.md` must stay current so the AI always grounds
+in reality. See [Maintaining AGENTS.md](#maintaining-agentsmd) at the end
+for the three automation approaches.
 
 ## Architecture
 
@@ -396,6 +342,30 @@ for a richer review experience:
 Status: **Nice to have.** The `<!-- -->` approach works today; Plannotator would
 upgrade the review UX once the workflow is validated.
 
+### Codebase Indexing
+
+Instead of (or in addition to) maintaining an OKF bundle, a codebase indexer
+can let the AI search across all service repos directly. The index provides
+reach; AGENTS.md provides meaning. Together they may eliminate the need for OKF.
+
+Tools (lightweight to enterprise):
+
+| Tool | Stack | Languages | Setup | Key feature |
+|------|-------|-----------|:--:|-------------|
+| [codemogger](https://github.com/glommer/codemogger) | SQLite + tree-sitter WASM | 13 lang | Minutes | Single `.db` file, 25-370x faster than grep |
+| [Lore](https://www.npmjs.com/package/@jafreck/lore) | SCIP + SQLite + ONNX embeddings | 23 lang | Hour | +5.6pp accuracy, -30% tokens, git blame |
+| [knot](https://github.com/raultov/knot) | Neo4j + Qdrant (graph + vector) | 9+ lang | Hour | Dual database, cross-repo dependencies |
+| [Infigraph](https://intuit.github.io/infigraph/) | Knowledge graph + BM25 | 62 lang | Hour | Zero LLM dependency, fully offline |
+| [Serena](https://github.com/oraios/serena) | LSP / JetBrains + MCP, symbol-level | 40+ lang | Minutes | Refactoring, debugging, cross-session memory |
+| [Sourcegraph](https://sourcegraph.com/mcp) | SCIP + MCP + Deep Search | All | Days | Enterprise cross-repo, semantic + historical |
+
+All expose an **MCP server** — plug into Claude Code, Copilot, or any agent.
+The [SCIP protocol](https://github.com/sourcegraph/scip) is becoming the open
+standard for precise code indexing (backed by Uber, Meta, Sourcegraph).
+
+Status: **Future exploration.** Start with codemogger for a quick test.
+Add Lore or knot if cross-repo dependency tracking is needed.
+
 ### The Plan-First Pattern
 
 All artifact-producing commands follow the same cycle:
@@ -416,3 +386,128 @@ AI dialogs → drafts → user reviews → approved → artifact
 4. **Approve.** User says "approved." AI writes the final artifact, deletes the draft.
 
 No artifact is written without a reviewed plan. Every draft is disposable.
+
+---
+
+## Maintaining AGENTS.md
+
+Each service repo has an `AGENTS.md` that tells AI agents how to work on
+that service. It must stay current or the AI grounds in stale information.
+Three approaches, from most automated to most manual.
+
+### Approach 1: Pre-Commit Hook (PowerShell)
+
+Fires automatically when a commit message contains `tag.` (the version-tag
+pattern used at the end of a development cycle).
+
+```
+Dev finishes feature → version commit "tag.v1.2.3: add refund support"
+                              │
+                     pre-commit hook fires
+                              │
+                Hook: git diff main...HEAD
+                Agent (Copilot or Claude) updates AGENTS.md
+                Updated file staged automatically
+```
+
+**Script:** [`hooks/pre-commit.ps1`](hooks/pre-commit.ps1)
+
+```powershell
+# Default (Copilot)
+.\.githooks\pre-commit.ps1
+
+# With a specific model
+.\.githooks\pre-commit.ps1 -Model gpt-4o
+
+# With Claude
+.\.githooks\pre-commit.ps1 -Agent claude -Model opus
+
+# Skip when in a hurry
+git commit --no-verify
+```
+
+**Pros:** Automatic — dev doesn't need to remember. **Cons:** Adds latency
+to the commit (LLM response time). The `--no-verify` escape hatch mitigates this.
+
+**Setup per repo:**
+
+1. Copy the hook script into the repo:
+   ```powershell
+   cp \path\to\spec-kit\hooks\pre-commit.ps1 .githooks\
+   ```
+
+2. Configure Git to use the `.githooks` directory:
+   ```powershell
+   git config core.hooksPath .githooks
+   ```
+
+3. Verify the hook is executable and the agent CLI is available:
+   ```powershell
+   # Test: Copilot must be authenticated
+   gh auth status
+
+   # Or: Claude must be installed
+   claude --version
+   ```
+
+4. Test with a dry run:
+   ```powershell
+   .\.githooks\pre-commit.ps1 -DryRun
+   ```
+
+5. The hook only fires on commit messages containing `tag.` — all other
+   commits pass through instantly. No latency for normal work.
+
+**CI equivalent (if permitted):** Move the script to a GitHub Actions /
+Azure DevOps pipeline triggered on push to main. Remove the hook. Same
+logic, zero dev machine impact.
+
+### Approach 2: Manual Skill
+
+Dev runs a skill at the end of development instead of relying on a hook.
+
+```
+/speckit.update-agents
+```
+
+**Skill:** [`skills/update-agents/SKILL.md`](skills/update-agents/SKILL.md)
+
+Launches a subagent that runs `git diff main...HEAD`, reads AGENTS.md,
+updates only the affected sections, and presents the result for review
+before committing.
+
+**Pros:** Full control — dev reviews before commit. No hook latency.
+**Cons:** Dev must remember to run it.
+
+### Approach 3: CI Pipeline (ideal, if permitted)
+
+Moves the work entirely off the developer's machine:
+
+```
+Push to main → CI job starts
+    → Agent reads git diff against previous main
+    → Agent updates AGENTS.md if surface changed
+    → Agent pushes updated AGENTS.md back
+    → Agent triggers central OKF aggregator sync
+```
+
+**Why it's the best option:**
+
+- **Zero developer burden** — no hooks, no skills, no remembering
+- **Reliable** — monitored, logged, failures are visible
+- **Atomic per push** — every merged PR gets its update
+- **Cross-repo alignment** — CI in the central aggregator repo can
+  automatically pull all service repo AGENTS.md files on a schedule,
+  regenerate the central OKF bundle, and keep the BA-facing knowledge
+  always in sync with reality — no manual `/speckit.okf-sync` needed
+
+**The only blocker:** company policy may prohibit AI agents in CI pipelines.
+If permitted, prefer this approach. It eliminates the maintenance burden entirely.
+
+### Comparison
+
+| Approach | Trigger | Review | Dev burden | Cross-repo sync |
+|----------|---------|:--:|:--:|:--:|
+| Pre-commit hook | `tag.` in commit | Immediate | None (but latency) | Manual |
+| Manual skill | Dev discretion | Pre-commit | Must remember | Manual |
+| CI pipeline | Push to main | Post-hoc | Zero | Automatic |
